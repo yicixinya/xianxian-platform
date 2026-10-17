@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>乡贤反哺对接平台 · 柑榄村</title>
+
+<!-- 注：Supabase 库默认不加载（国内 CDN 易卡顿）。若将来启用 Supabase，在此重新引入：
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+-->
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f5f3ee; color: #333; min-height: 100vh; line-height: 1.6;
+}
+
+/* ===== 顶部 ===== */
+.header {
+  background: linear-gradient(135deg, #8b5a2b 0%, #6b4423 100%);
+  color: #fff; padding: 14px 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.header .left h1 { font-size: 18px; font-weight: 600; letter-spacing: 1px; }
+.header .left .subtitle { font-size: 11px; opacity: 0.85; margin-top: 3px; }
+.header .badge {
+  display: inline-block; background: rgba(255,255,255,0.18);
+  padding: 2px 10px; border-radius: 12px; font-size: 11px; margin-left: 6px;
+}
+.header .right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.header .user-info { font-size: 12px; text-align: right; line-height: 1.3; }
+.header .user-info .role { font-size: 10px; opacity: 0.8; }
+.btn-login {
+  background: rgba(255,255,255,0.2); color: #fff; border: none;
+  border-radius: 16px; padding: 7px 14px; font-size: 13px; cursor: pointer;
+  font-family: inherit; transition: background 0.2s;
+}
+.btn-login:hover { background: rgba(255,255,255,0.32); }
+.btn-login.outline { background: transparent; border: 1px solid rgba(255,255,255,0.6); }
+
+/* ===== 主体 ===== */
+.wrap { max-width: 1100px; margin: 0 auto; padding: 16px; padding-bottom: 90px; }
+
+/* ===== 统计 ===== */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+.stat-card {
+  background: #fff; border-radius: 12px; padding: 16px 12px; text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-top: 3px solid #8b5a2b;
+  animation: fadeUp 0.4s ease both;
+}
+.stat-card .num { font-size: 22px; font-weight: 700; color: #8b5a2b; }
+.stat-card .lbl { font-size: 11px; color: #888; margin-top: 4px; }
+
+/* ===== Tab ===== */
+.tabs {
+  display: flex; gap: 8px; margin-bottom: 16px; background: #fff;
+  padding: 6px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow-x: auto;
+}
+.tab {
+  flex: 1; text-align: center; padding: 10px 8px; border-radius: 8px; cursor: pointer;
+  font-size: 13px; color: #666; white-space: nowrap; transition: all 0.2s;
+  border: none; background: transparent; font-family: inherit;
+}
+.tab.active { background: linear-gradient(135deg, #8b5a2b 0%, #6b4423 100%); color: #fff; font-weight: 600; }
+
+/* ===== 区块标题 ===== */
+.section-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 16px; font-weight: 600; color: #6b4423; margin: 8px 0 12px;
+}
+.section-title::before { content: ""; width: 4px; height: 18px; background: #8b5a2b; border-radius: 2px; }
+.section-title .more { margin-left: auto; font-size: 12px; font-weight: 400; color: #999; }
+
+/* ===== 筛选条 ===== */
+.filter-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+.filter-bar input, .filter-bar select {
+  padding: 8px 12px; border: 1px solid #e0d6c6; border-radius: 18px;
+  font-size: 12px; background: #fff; color: #555; font-family: inherit; outline: none;
+}
+.filter-bar input { flex: 1; min-width: 150px; }
+.filter-bar input:focus, .filter-bar select:focus { border-color: #8b5a2b; }
+.filter-chip {
+  font-size: 11px; padding: 6px 12px; border-radius: 14px; background: #fff;
+  border: 1px solid #e0d6c6; color: #777; cursor: pointer; transition: all 0.18s;
+}
+.filter-chip.active { background: linear-gradient(135deg, #8b5a2b 0%, #6b4423 100%); color: #fff; border-color: transparent; font-weight: 600; }
+.filter-chip:hover { border-color: #8b5a2b; }
+
+/* ===== 项目卡片 ===== */
+.projects { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.proj-card {
+  background: #fff; border-radius: 12px; overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07); cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  display: flex; flex-direction: column; animation: fadeUp 0.35s ease both;
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.proj-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(139,90,43,0.18); }
+.proj-card .cover {
+  height: 110px; background: linear-gradient(135deg, #c9a572 0%, #8b5a2b 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 38px; color: rgba(255,255,255,0.95); position: relative;
+}
+.proj-card .cover::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.2), transparent 60%); }
+.proj-card .body { padding: 12px 14px; flex: 1; display: flex; flex-direction: column; }
+.proj-card .cat {
+  display: inline-block; font-size: 10px; background: #f0e6d6; color: #8b5a2b;
+  padding: 2px 8px; border-radius: 10px; margin-bottom: 6px; align-self: flex-start;
+}
+.proj-card h3 { font-size: 15px; color: #333; margin-bottom: 6px; }
+.proj-card .desc { font-size: 12px; color: #777; flex: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.proj-card .meta {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 10px; padding-top: 10px; border-top: 1px dashed #eee; font-size: 11px;
+}
+.proj-card .amt { color: #c0392b; font-weight: 600; font-size: 13px; }
+.status-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+.status-need { background: #fff3cd; color: #b8860b; }
+.status-claim { background: #d6eaff; color: #1a73e8; }
+.status-done { background: #d4f5d4; color: #2e7d32; }
+
+/* ===== 浮动按钮 ===== */
+.fab {
+  position: fixed; right: 16px; bottom: 20px;
+  border: none; border-radius: 26px; padding: 12px 18px;
+  font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; z-index: 90;
+  display: flex; align-items: center; gap: 6px; font-family: inherit;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+.fab-publish { background: linear-gradient(135deg, #c0392b 0%, #8b2a1f 100%); box-shadow: 0 4px 14px rgba(192,57,43,0.4); }
+
+/* ===== 弹窗 ===== */
+.modal-mask {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200;
+  display: none; align-items: center; justify-content: center; padding: 16px;
+}
+.modal-mask.show { display: flex; }
+.modal {
+  background: #fff; border-radius: 14px; width: 100%; max-width: 500px;
+  max-height: 88vh; overflow-y: auto; position: relative; animation: pop 0.2s ease;
+}
+@keyframes pop { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal .close {
+  position: absolute; top: 10px; right: 14px; font-size: 26px; color: #999;
+  background: none; border: none; cursor: pointer; line-height: 1; z-index: 2;
+}
+.modal-head { padding: 20px 20px 12px; border-bottom: 1px solid #f0f0f0; }
+.modal-head h3 { font-size: 16px; color: #333; padding-right: 30px; }
+.modal-head .meta-row { font-size: 12px; color: #888; margin-top: 6px; display: flex; flex-wrap: wrap; gap: 10px; }
+.modal-body { padding: 16px 20px; }
+.modal-body p { font-size: 14px; color: #555; margin-bottom: 10px; }
+.info-box {
+  background: #faf6ef; border-left: 3px solid #8b5a2b; padding: 10px 12px;
+  border-radius: 6px; font-size: 13px; color: #6b4423; margin: 12px 0;
+}
+.info-box.green { background: #eaf6ea; border-color: #2e7d32; color: #2e7d32; }
+.info-box.red { background: #fdecea; border-color: #c0392b; color: #c0392b; }
+.modal-body .progress { background: #eee; height: 8px; border-radius: 4px; overflow: hidden; margin: 10px 0; }
+.modal-body .progress > div { height: 100%; background: linear-gradient(90deg, #c9a572, #8b5a2b); transition: width 0.5s; }
+
+/* 表单 */
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 500; }
+.form-group label.inline { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.form-group input, .form-group textarea, .form-group select {
+  width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px;
+  font-size: 14px; font-family: inherit; background: #fff;
+}
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: #8b5a2b; }
+.form-group textarea { resize: vertical; min-height: 70px; }
+.form-row { display: flex; gap: 12px; }
+.form-row .form-group { flex: 1; }
+.btn {
+  background: linear-gradient(135deg, #8b5a2b 0%, #6b4423 100%); color: #fff; border: none;
+  border-radius: 8px; padding: 11px 18px; font-size: 14px; font-weight: 600; cursor: pointer;
+  width: 100%; font-family: inherit; transition: opacity 0.2s;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.outline { background: #fff; color: #8b5a2b; border: 1px solid #8b5a2b; }
+.btn.green { background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%); }
+.btn.red { background: linear-gradient(135deg, #c0392b 0%, #8b2a1f 100%); }
+.btn-row { display: flex; gap: 10px; }
+.btn-row .btn { flex: 1; }
+.btn::before { content: ""; }
+.divider {
+  display: flex; align-items: center; gap: 8px; margin: 18px 0 10px;
+}
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #eee; }
+.divider span { font-size: 11px; color: #bbb; }
+
+/* 登录注册切换 */
+.auth-tabs { display: flex; background: #f5f3ee; border-radius: 10px; padding: 4px; margin-bottom: 16px; }
+.auth-tabs button {
+  flex: 1; padding: 9px; border: none; background: transparent; cursor: pointer;
+  font-size: 14px; color: #777; border-radius: 8px; font-family: inherit; font-weight: 500;
+}
+.auth-tabs button.active { background: #fff; color: #8b5a2b; font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.role-pick { display: flex; gap: 10px; margin-bottom: 14px; }
+.role-pick label {
+  flex: 1; border: 1px solid #ddd; border-radius: 10px; padding: 14px 10px;
+  text-align: center; cursor: pointer; font-size: 13px; transition: all 0.18s; background: #fff;
+}
+.role-pick label.active { border-color: #8b5a2b; background: #faf6ef; color: #8b5a2b; font-weight: 600; }
+.role-pick input { display: none; }
+.role-pick .ico { font-size: 24px; display: block; margin-bottom: 4px; }
+
+/* ===== 乡贤信息库 ===== */
+.talent-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.talent-card {
+  background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex; gap: 12px; align-items: flex-start; animation: fadeUp 0.35s ease both;
+}
+.talent-card .avatar {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: linear-gradient(135deg, #c9a572, #8b5a2b);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 19px; flex-shrink: 0; font-weight: 600;
+}
+.talent-card .info { flex: 1; min-width: 0; }
+.talent-card .name { font-size: 14px; font-weight: 600; color: #333; }
+.talent-card .name small { font-weight: 400; color: #999; }
+.talent-card .tags { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px; }
+.talent-card .tag { font-size: 10px; background: #f0e6d6; color: #8b5a2b; padding: 1px 6px; border-radius: 8px; }
+.talent-card .desc { font-size: 12px; color: #888; margin-top: 6px; }
+.talent-card .you { font-size: 10px; color: #2e7d32; font-weight: 600; }
+
+/* ===== 致谢墙 ===== */
+.thanks-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.thanks-card {
+  background: linear-gradient(135deg, #fff8ec 0%, #fff 100%);
+  border: 1px solid #f0e6d6; border-radius: 12px; padding: 14px; position: relative;
+  transition: transform 0.18s, box-shadow 0.18s; animation: fadeUp 0.4s ease both;
+}
+.thanks-card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(139,90,43,0.15); }
+.thanks-card::before { content: "❝"; position: absolute; top: 4px; left: 10px; font-size: 32px; color: rgba(139,90,43,0.2); font-family: serif; }
+.thanks-card .proj { font-size: 14px; font-weight: 600; color: #6b4423; margin-bottom: 6px; padding-left: 24px; }
+.thanks-card .msg { font-size: 13px; color: #555; padding-left: 24px; font-style: italic; }
+.thanks-card .donor { font-size: 12px; color: #999; margin-top: 8px; padding-left: 24px; text-align: right; }
+.thanks-card .monument { font-size: 11px; color: #2e7d32; margin-top: 4px; padding-left: 24px; }
+
+/* ===== 个人中心 ===== */
+.profile-card {
+  background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); margin-bottom: 16px;
+}
+.profile-top { display: flex; gap: 14px; align-items: center; }
+.profile-top .avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, #c9a572, #8b5a2b);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 600;
+}
+.profile-top .pname { font-size: 17px; font-weight: 600; color: #333; }
+.profile-top .prole { font-size: 12px; color: #888; margin-top: 3px; }
+.profile-detail { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 16px; margin-top: 16px; font-size: 13px; }
+.profile-detail .item .k { color: #999; }
+.profile-detail .item .v { color: #333; margin-top: 2px; }
+.mini-stat { display: flex; gap: 12px; margin-top: 16px; }
+.mini-stat .ms { flex: 1; background: #faf6ef; border-radius: 10px; padding: 12px; text-align: center; }
+.mini-stat .ms .n { font-size: 20px; font-weight: 700; color: #8b5a2b; }
+.mini-stat .ms .l { font-size: 11px; color: #888; }
+.record-item {
+  background: #fff; border-radius: 10px; padding: 12px 14px; margin-bottom: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; gap: 10px;
+}
+.record-item .l { flex: 1; min-width: 0; }
+.record-item .l .t { font-size: 14px; color: #333; font-weight: 500; }
+.record-item .l .s { font-size: 11px; color: #999; margin-top: 2px; }
+.record-item .r { text-align: right; }
+.record-item .r .a { font-size: 15px; font-weight: 700; color: #c0392b; }
+.record-item .r .d { font-size: 11px; color: #999; }
+
+/* 空状态 / 隐藏 */
+.empty { text-align: center; padding: 50px 20px; color: #aaa; }
+.empty .ico { font-size: 48px; margin-bottom: 10px; }
+.hidden { display: none !important; }
+.lock-note { font-size: 12px; color: #c0392b; text-align: center; margin-top: 6px; }
+
+@media (max-width: 600px) {
+  .stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 12px 8px; }
+  .stat-card .num { font-size: 18px; }
+  /* 顶部：标题更小、隐藏副标题和徽章，给登录按钮腾地方 */
+  .header { padding: 10px 14px; flex-wrap: wrap; gap: 6px; }
+  .header .left { flex: 1; min-width: 0; }
+  .header .left h1 { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header .left .subtitle { display: none; }
+  .header .badge { display: none; }
+  .header .user-info { display: none; }
+  .header .right { flex-shrink: 0; }
+  .btn-login { padding: 6px 11px; font-size: 12px; }
+  /* Tab 紧凑 + 横滑 */
+  .tabs { gap: 4px; padding: 4px; }
+  .tab { padding: 9px 4px; font-size: 12px; }
+  /* 项目/乡贤卡片单列 */
+  .projects, .talent-list, .thanks-list { grid-template-columns: 1fr; }
+  /* 弹窗占满屏，留呼吸空间 */
+  .modal-mask { padding: 0; align-items: flex-end; }
+  .modal { max-width: 100%; max-height: 92vh; border-radius: 14px 14px 0 0; }
+  .modal-head { padding: 16px 16px 10px; }
+  .modal-head h3 { font-size: 15px; }
+  .modal-body { padding: 14px 16px; }
+  /* 输入框 ≥16px，防止 iOS 聚焦自动放大 */
+  .form-group input, .form-group textarea, .form-group select { font-size: 16px; padding: 11px 12px; }
+  .filter-bar input, .filter-bar select { font-size: 14px; }
+  /* 触控目标放大 */
+  .btn { padding: 13px 16px; }
+  .fab { right: 14px; bottom: 16px; padding: 13px 18px; font-size: 13px; }
+  .profile-detail { grid-template-columns: 1fr; }
+  .profile-top .avatar { width: 48px; height: 48px; font-size: 20px; }
+  .record-item { flex-direction: row; }
+}
+@media (max-width: 360px) {
+  .stats { grid-template-columns: 1fr; }
+  .header .left h1 { font-size: 13px; }
+  .btn-login { padding: 5px 9px; font-size: 11px; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="left">
+    <h1>🤝 乡贤反哺对接平台<span class="badge">柑榄村 · 百千万工程</span></h1>
+    <div class="subtitle">以乡情为纽带，打通村庄需求与在外乡贤资源的双向匹配</div>
+  </div>
+  <div class="right" id="headerRight"></div>
+</div>
+
+<div class="wrap">
+  <div class="stats" id="stats"></div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="needs">📋 需求清单</button>
+    <button class="tab" data-tab="talents">👥 乡贤信息库</button>
+    <button class="tab" data-tab="thanks">🙏 致谢公示</button>
+    <button class="tab" data-tab="mine" id="tabMine" style="display:none;">👤 我的</button>
+  </div>
+
+  <!-- 需求清单 -->
+  <div id="tab-needs">
+    <div class="section-title">村庄建设需求清单<span class="more">村委会每半年发布一次</span></div>
+    <div class="filter-bar">
+      <input type="text" id="searchInput" placeholder="🔍 搜索项目标题、村名、关键词..." oninput="renderProjects()">
+      <select id="filterCategory" onchange="renderProjects()">
+        <option value="">全部分类</option>
+        <option>基础设施</option><option>古迹保护</option><option>文化教育</option>
+        <option>民生公益</option><option>产业发展</option><option>人居环境</option>
+      </select>
+      <span class="filter-chip active" data-status="" onclick="setStatusFilter('')">全部</span>
+      <span class="filter-chip" data-status="need" onclick="setStatusFilter('need')">待认领</span>
+      <span class="filter-chip" data-status="claim" onclick="setStatusFilter('claim')">认领中</span>
+      <span class="filter-chip" data-status="done" onclick="setStatusFilter('done')">已完成</span>
+    </div>
+    <div class="projects" id="projects"></div>
+  </div>
+
+  <!-- 乡贤信息库 -->
+  <div id="tab-talents" class="hidden">
+    <div class="section-title">在外乡贤信息库<span class="more">镇政府/村委会对乡贤资源摸底建档</span></div>
+    <div class="filter-bar">
+      <input type="text" id="talentSearch" placeholder="🔍 搜索乡贤姓名、籍贯、行业..." oninput="renderTalents()">
+    </div>
+    <div class="talent-list" id="talents"></div>
+  </div>
+
+  <!-- 致谢公示 -->
+  <div id="tab-thanks" class="hidden">
+    <div class="section-title">致谢公示墙<span class="more">项目完成后立碑公示致谢</span></div>
+    <div class="thanks-list" id="thanks"></div>
+  </div>
+
+  <!-- 我的 -->
+  <div id="tab-mine" class="hidden">
+    <div id="mineContent"></div>
+  </div>
+
+</div>
+
+<button class="fab fab-publish" id="fabPublish" onclick="openPublishModal()" style="display:none;">＋ 发布需求</button>
+
+<div class="modal-mask" id="modal"><div class="modal" id="modalInner"></div></div>
+
+<script>
+/* ============================================================
+   乡贤反哺对接平台 · 数据与逻辑
+   含账号系统（乡贤/村委会两种角色）+ 权限控制
+   演示数据基于柑榄村（四会市贞山街道 · 苏氏宗族）
+   数据持久化用 localStorage
+   ============================================================ */
+
+// ===== GitHub 后端配置（推荐：稳定公网 + 多用户共享数据） =====
+// 用你现有 GitHub 账号生成 fine-grained PAT（仅授权 village-map 仓库 Contents 读写）
+// 生成页：https://github.com/settings/personal-access-tokens/new
+const GITHUB_OWNER = "yicixinya";
+const GITHUB_REPO = "xianxian-platform";
+const GITHUB_BRANCH = "main";
+const GITHUB_TOKEN = "在此填你的 GitHub fine-grained PAT";
+const DATA_PATH = "data.json";
+
+const USE_GITHUB = GITHUB_TOKEN && !GITHUB_TOKEN.includes("在此填");
+const GH_API = "https://api.github.com/repos/" + GITHUB_OWNER + "/" + GITHUB_REPO + "/contents/" + DATA_PATH;
+
+// ===== Supabase 后端配置（备选，未用可忽略） =====
+const SUPABASE_URL = "在此填你的 Supabase Project URL";
+const SUPABASE_KEY = "在此填你的 anon public key";
+const VILLAGE_CODES = ["888888"];   // 村委会注册邀请码（镇政府核发，可改）
+const STORE_KEY = "xianxian_platform_v3";
+const SESSION_KEY = "xianxian_session";
+
+let supa = null;
+try {
+  if (SUPABASE_URL && SUPABASE_KEY && !SUPABASE_URL.includes("在此填") && !SUPABASE_KEY.includes("在此填") && window.supabase) {
+    supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+} catch (e) { console.warn("Supabase 初始化失败，退回本地模式", e); }
+const USE_BACKEND = !!supa && !USE_GITHUB;
+// 服务器模式：当页面通过 http(s) 访问（如 serveo 隧道 / 局域网）且未配 GitHub/Supabase 时，
+// 走同源的 /api/data 接口共享数据（由本地 server.ps1 提供）
+const USE_SERVER = !USE_BACKEND && !USE_GITHUB && (location.protocol === "http:" || location.protocol === "https:");
+const API_URL = "api/data";
+
+// GitHub API 工具
+function ghHeaders(extra) {
+  const h = { "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+  if (USE_GITHUB) h["Authorization"] = "Bearer " + GITHUB_TOKEN;
+  return Object.assign(h, extra || {});
+}
+function b64encode(str) { return btoa(unescape(encodeURIComponent(str))); }
+function b64decode(b64) { return decodeURIComponent(escape(atob(b64.replace(/\s/g, "")))); }
+
+// 平台默认空白起步（无演示账号、无演示项目）
+const DEFAULT_DATA = { accounts: [], projects: [] };
+
+/* ===== 会话（仅存当前浏览器登录的账号ID，不进共享库） ===== */
+function getSession() { return localStorage.getItem(SESSION_KEY) || null; }
+function setSession(id) { if (id) localStorage.setItem(SESSION_KEY, id); else localStorage.removeItem(SESSION_KEY); }
+
+/* ===== 密码哈希（SHA-256 + 盐，避免明文存储） ===== */
+async function hashPass(pw) {
+  const enc = new TextEncoder().encode("xx_salt_" + pw);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/* ===== 数据加载/保存（后端优先，否则 localStorage） ===== */
+async function loadData() {
+  // GitHub 模式（稳定公网共享数据）
+  if (USE_GITHUB) {
+    try {
+      const r = await fetch(GH_API + "?ref=" + GITHUB_BRANCH, { headers: ghHeaders(), method: "GET" });
+      if (r.status === 404) {
+        // 首次：初始化空数据文件
+        const init = JSON.stringify({ accounts: [], projects: [] });
+        const cr = await fetch(GH_API, { method: "PUT", headers: ghHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify({ message: "init platform data", content: b64encode(init), branch: GITHUB_BRANCH }) });
+        if (!cr.ok) throw new Error("init " + cr.status);
+        const def = { accounts: [], projects: [] }; def.villageCodes = VILLAGE_CODES; def._sha = (await cr.json()).content.sha;
+        return def;
+      }
+      if (!r.ok) throw new Error("gh get " + r.status);
+      const j = await r.json();
+      const d = JSON.parse(b64decode(j.content));
+      d.villageCodes = VILLAGE_CODES;
+      d._sha = j.sha;  // 记录版本号，写回时用
+      return d;
+    } catch (e) {
+      console.error("GitHub 读取失败，临时用本地", e);
+    }
+  }
+  // 服务器模式（serveo 隧道 / 局域网同源）
+  if (USE_SERVER) {
+    try {
+      const r = await fetch(API_URL, { method: "GET" });
+      if (!r.ok) throw new Error("server " + r.status);
+      const d = await r.json();
+      d.villageCodes = VILLAGE_CODES;
+      return d;
+    } catch (e) {
+      console.warn("服务器读取失败，回退本地", e);
+    }
+  }
+  // Supabase 模式
+  if (USE_BACKEND) {
+    try {
+      const { data, error } = await supa.from("platform_data").select("data").eq("id", 1).maybeSingle();
+      if (error) throw error;
+      if (data && data.data) { const d = JSON.parse(JSON.stringify(data.data)); d.villageCodes = VILLAGE_CODES; return d; }
+      const def = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      const { error: e2 } = await supa.from("platform_data").insert({ id: 1, data: def });
+      if (e2) throw e2;
+      def.villageCodes = VILLAGE_CODES;
+      return def;
+    } catch (e) {
+      console.error("后端读取失败，临时用本地空数据", e);
+      const def = JSON.parse(JSON.stringify(DEFAULT_DATA)); def.villageCodes = VILLAGE_CODES;
+      return def;
+    }
+  }
+  // 本地 localStorage 模式（file:// 打开）
+  try { const raw = localStorage.getItem(STORE_KEY); if (raw) { const d = JSON.parse(raw); d.villageCodes = VILLAGE_CODES; return d; } } catch (e) {}
+  const def = JSON.parse(JSON.stringify(DEFAULT_DATA)); def.villageCodes = VILLAGE_CODES;
+  localStorage.setItem(STORE_KEY, JSON.stringify(def));
+  return def;
+}
+async function saveData(d) {
+  const blob = { accounts: d.accounts, projects: d.projects };
+  // GitHub 模式
+  if (USE_GITHUB) {
+    // 先取最新 sha（避免覆盖他人改动）
+    let sha = d._sha;
+    try {
+      const gr = await fetch(GH_API + "?ref=" + GITHUB_BRANCH, { headers: ghHeaders(), method: "GET" });
+      if (gr.ok) { const gj = await gr.json(); sha = gj.sha; }
+    } catch (e) {}
+    const content = b64encode(JSON.stringify(blob));
+    const r = await fetch(GH_API, { method: "PUT", headers: ghHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ message: "update platform data", content, sha, branch: GITHUB_BRANCH }) });
+    if (r.status === 409) throw new Error("数据已被他人更新，请刷新后重试");
+    if (!r.ok) throw new Error("gh put " + r.status + " " + (await r.text().catch(()=>"")));
+    const nj = await r.json(); d._sha = nj.content.sha;
+    return;
+  }
+  if (USE_SERVER) {
+    const r = await fetch(API_URL, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(blob) });
+    if (!r.ok) { const t = await r.text().catch(()=>""); throw new Error("保存失败 " + r.status + " " + t); }
+    return;
+  }
+  if (USE_BACKEND) {
+    const { error } = await supa.from("platform_data").upsert({ id: 1, data: blob });
+    if (error) { console.error("后端保存失败", error); alert("保存失败，请检查网络后重试。"); throw error; }
+    return;
+  }
+  localStorage.setItem(STORE_KEY, JSON.stringify(blob));
+}
+let DATA = { accounts: [], projects: [], villageCodes: VILLAGE_CODES };
+
+// 编辑事务：先拉最新数据，再改，再存，再拉一次刷新（减少多人并发覆盖）
+async function beginEdit() { if (USE_GITHUB || USE_BACKEND || USE_SERVER) DATA = await loadData(); }
+async function endEdit() { await saveData(DATA); if (USE_GITHUB || USE_BACKEND || USE_SERVER) DATA = await loadData(); refreshAll(); }
+
+/* ===== 工具 ===== */
+function yuan(n) { return "￥" + (n >= 10000 ? (n / 10000).toFixed(n % 10000 === 0 ? 0 : 1) + "万" : n); }
+function statusText(s) { return { need: "待认领", claim: "认领中", done: "已完成" }[s] || s; }
+function statusClass(s) { return { need: "status-need", claim: "status-claim", done: "status-done" }[s] || ""; }
+function pct(p) { return p.amount > 0 ? Math.min(100, Math.round(p.raised / p.amount * 100)) : 0; }
+function uid(p) { return (p || "id") + Date.now(); }
+function today() { return new Date().toISOString().slice(0, 10); }
+function currentUser() { const id = getSession(); return id ? (DATA.accounts.find(a => a.id === id) || null) : null; }
+function isVillage() { const u = currentUser(); return u && u.role === "village"; }
+function isTalent() { const u = currentUser(); return u && u.role === "talent"; }
+
+/* ===== 支付相关（按村委会账号各自管理收款码，仅支持收款码+凭证） ===== */
+// 取某账号的收款码设置
+function accPayment(accId) {
+  const acc = DATA.accounts.find(a => a.id === accId);
+  return (acc && acc.payment) ? acc.payment : { qrcode: "" };
+}
+// 取某项目的收款码（按发布该项目的村委会账号）
+function paymentForProject(p) { return accPayment(p.creatorId); }
+// 计算项目已确认到账金额（pending 的不计入）
+function raisedOf(p) { return p.donors.filter(d => d.status !== "pending").reduce((s, d) => s + d.amount, 0); }
+function recalcRaised(p) { p.raised = raisedOf(p); return p.raised; }
+// 图片压缩为 base64（控制 localStorage 体积）
+function compressImage(file, maxW, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+        const c = document.createElement("canvas");
+        c.width = w; c.height = h;
+        c.getContext("2d").drawImage(img, 0, 0, w, h);
+        resolve(c.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ===== 渲染头部登录区 ===== */
+function renderHeader() {
+  const box = document.getElementById("headerRight");
+  const u = currentUser();
+  if (u) {
+    box.innerHTML = `
+      <div class="user-info">
+        <div>${u.name}</div>
+        <div class="role">${u.role === "village" ? "🏛 村委会" : "🤝 乡贤"}</div>
+      </div>
+      <button class="btn-login" onclick="goMine()">👤 个人中心</button>
+      <button class="btn-login outline" onclick="logout()">退出</button>`;
+  } else {
+    box.innerHTML = `<button class="btn-login" onclick="openAuth('login')">登录</button>
+      <button class="btn-login outline" onclick="openAuth('register')">注册</button>`;
+  }
+  // 控制发布按钮 & 我的tab
+  document.getElementById("fabPublish").style.display = isVillage() ? "flex" : "none";
+  document.getElementById("tabMine").style.display = u ? "block" : "none";
+}
+
+/* ===== 统计 ===== */
+function renderStats() {
+  const ps = DATA.projects;
+  const done = ps.filter(p => p.status === "done").length;
+  const claim = ps.filter(p => p.status === "claim").length;
+  const totalRaised = ps.reduce((s, p) => s + p.raised, 0);
+  const html = [
+    ["📋", ps.length, "需求项目"],
+    ["🤝", claim, "认领进行中"],
+    ["✅", done, "已完工公示"],
+    ["💰", yuan(totalRaised), "已筹措资金"]
+  ].map(([ico, num, lbl]) => `<div class="stat-card"><div class="num">${ico} ${num}</div><div class="lbl">${lbl}</div></div>`).join("");
+  document.getElementById("stats").innerHTML = html;
+}
+
+/* ===== 需求清单 ===== */
+let statusFilter = "";
+function setStatusFilter(s) {
+  statusFilter = s;
+  document.querySelectorAll(".filter-chip").forEach(c => c.classList.toggle("active", c.dataset.status === s));
+  renderProjects();
+}
+function renderProjects() {
+  const box = document.getElementById("projects");
+  const kw = (document.getElementById("searchInput")?.value || "").trim().toLowerCase();
+  const cat = document.getElementById("filterCategory")?.value || "";
+  let list = DATA.projects.filter(p => {
+    if (statusFilter && p.status !== statusFilter) return false;
+    if (cat && p.category !== cat) return false;
+    if (kw) { const hay = (p.title + p.village + p.desc + p.category).toLowerCase(); if (!hay.includes(kw)) return false; }
+    return true;
+  });
+  if (DATA.projects.length === 0) {
+    box.innerHTML = `<div class="empty"><div class="ico">📋</div>暂无需求项目<br><small>村委会登录后，点击右下角「＋ 发布需求」即可发布</small></div>`;
+    return;
+  }
+  if (list.length === 0) { box.innerHTML = `<div class="empty"><div class="ico">🔍</div>没有符合条件的项目<br><small>试试换个关键词或筛选条件</small></div>`; return; }
+  box.innerHTML = list.map(p => `
+    <div class="proj-card" onclick="openProject('${p.id}')">
+      <div class="cover">${p.icon || "📍"}</div>
+      <div class="body">
+        <span class="cat">${p.category}</span>
+        <h3>${p.title}</h3>
+        <div class="desc">${p.desc}</div>
+        <div class="meta"><span class="amt">${yuan(p.raised)} / ${yuan(p.amount)}</span><span class="status-tag ${statusClass(p.status)}">${statusText(p.status)}</span></div>
+      </div>
+    </div>`).join("");
+}
+
+/* ===== 乡贤信息库 ===== */
+function renderTalents() {
+  const box = document.getElementById("talents");
+  const kw = (document.getElementById("talentSearch")?.value || "").trim().toLowerCase();
+  let list = DATA.accounts.filter(a => a.role === "talent");
+  if (kw) list = list.filter(t => (t.name + t.origin + t.industry + t.city + t.intro).toLowerCase().includes(kw));
+  if (list.length === 0) { box.innerHTML = `<div class="empty"><div class="ico">👥</div>乡贤信息库为空<br><small>乡贤注册账号后将自动入库</small></div>`; return; }
+  box.innerHTML = list.map(t => `
+    <div class="talent-card">
+      <div class="avatar">${t.name.charAt(0)}</div>
+      <div class="info">
+        <div class="name">${t.name} ${t.id === getSession() ? '<span class="you">（我）</span>' : ''}<small>· ${t.city}</small></div>
+        <div class="tags">${(t.tags||[]).map(x => `<span class="tag">${x}</span>`).join("")}</div>
+        <div class="desc">${t.intro}</div>
+      </div>
+    </div>`).join("");
+}
+
+/* ===== 致谢墙 ===== */
+function renderThanks() {
+  const box = document.getElementById("thanks");
+  const done = DATA.projects.filter(p => p.status === "done" && p.thanks);
+  if (done.length === 0) { box.innerHTML = `<div class="empty"><div class="ico">🙏</div>暂无致谢公示<br><small>项目完工后将在此立碑致谢</small></div>`; return; }
+  box.innerHTML = done.map(p => `
+    <div class="thanks-card">
+      <div class="proj">${p.icon || "📍"} ${p.title}</div>
+      <div class="msg">${p.thanks}</div>
+      <div class="donor">— 捐资：${p.donors.filter(d=>d.status!=="pending").map(d => (d.anonymous ? "匿名乡贤" : d.name) + "（" + yuan(d.amount) + "）").join("、")}</div>
+      ${p.monument ? `<div class="monument">🏛 已于项目所在地立碑永志</div>` : ""}
+      ${p.completeDate ? `<div class="monument" style="color:#999;">完工日期：${p.completeDate}</div>` : ""}
+    </div>`).join("");
+}
+
+/* ===== Tab ===== */
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.onclick = () => {
+    if (btn.style.display === "none") return;
+    document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    const tab = btn.dataset.tab;
+    ["needs", "talents", "thanks", "mine"].forEach(t => {
+      document.getElementById("tab-" + t).classList.toggle("hidden", t !== tab);
+    });
+    if (tab === "mine") renderMine();
+  };
+});
+function goMine() {
+  document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+  document.getElementById("tabMine").classList.add("active");
+  ["needs", "talents", "thanks", "mine"].forEach(t => document.getElementById("tab-" + t).classList.toggle("hidden", t !== "mine"));
+  renderMine();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ===== 登录/注册弹窗 ===== */
+let authMode = "login";
+let regRole = "talent";
+function openAuth(mode) {
+  authMode = mode || "login";
+  regRole = "talent";
+  renderAuthModal();
+  document.getElementById("modal").classList.add("show");
+}
+function renderAuthModal() {
+  const isLogin = authMode === "login";
+  document.getElementById("modalInner").innerHTML = `
+    <button class="close" onclick="closeModal()">×</button>
+    <div class="modal-body" style="padding-top:24px;">
+      <div class="auth-tabs">
+        <button class="${isLogin ? "active" : ""}" onclick="switchAuth('login')">登录</button>
+        <button class="${!isLogin ? "active" : ""}" onclick="switchAuth('register')">注册</button>
+      </div>
+      ${isLogin ? `
+        <div class="info-box">演示账号：村委会 13800000001 / 乡贤 13800000002，密码均 123456</div>
+        <div class="form-group"><label>手机号</label><input type="tel" id="authPhone" placeholder="11位手机号"></div>
+        <div class="form-group"><label>密码</label><input type="password" id="authPass" placeholder="密码"></div>
+        <button class="btn" onclick="doLogin()">登 录</button>
+      ` : `
+        <div class="role-pick">
+          <label class="${regRole==='talent'?'active':''}" onclick="pickRole('talent')">
+            <span class="ico">🤝</span>乡贤<br><small style="font-size:10px;color:#999;">认领捐资</small>
+            <input type="radio" name="rl" value="talent" ${regRole==='talent'?'checked':''}>
+          </label>
+          <label class="${regRole==='village'?'active':''}" onclick="pickRole('village')">
+            <span class="ico">🏛</span>村委会<br><small style="font-size:10px;color:#999;">发布需求 · 需邀请码</small>
+            <input type="radio" name="rl" value="village" ${regRole==='village'?'checked':''}>
+          </label>
+        </div>
+        <div class="form-group"><label>姓名 / 单位名称</label><input type="text" id="regName" placeholder="如：苏振华 / 某村委会"></div>
+        <div class="form-row">
+          <div class="form-group"><label>手机号</label><input type="tel" id="regPhone" placeholder="11位手机号"></div>
+          <div class="form-group"><label>密码</label><input type="password" id="regPass" placeholder="设置密码"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>籍贯/所在村</label><input type="text" id="regOrigin" placeholder="如：柑榄村"></div>
+          <div class="form-group"><label>所在城市</label><input type="text" id="regCity" placeholder="如：深圳"></div>
+        </div>
+        ${regRole === "talent" ? `
+          <div class="form-group"><label>从事行业</label><input type="text" id="regIndustry" placeholder="如：制造业 / 建筑地产 / 医疗"></div>
+          <div class="form-group"><label>个人简介（选填）</label><textarea id="regIntro" placeholder="简单介绍自己与家乡的联结、可贡献的资源..."></textarea></div>
+        ` : `
+          <div class="info-box red">🏛 村委会注册需填写邀请码（由镇政府统一核发给各村委），以防村民冒充注册获取发布权限。</div>
+        <div class="form-group">
+          <label>村委会邀请码</label>
+          <input type="text" id="regCode" placeholder="输入镇政府核发的邀请码" maxlength="20">
+          <small style="display:block;color:#999;font-size:11px;margin-top:4px;">一村一码，由镇政府线下发放，请向所在镇人民政府申请</small>
+        </div>
+        <div class="form-group"><label>单位简介（选填）</label><textarea id="regIntro" placeholder="如：柑榄村村民委员会..."></textarea></div>
+        `}
+        <button class="btn" onclick="doRegister()">注 册</button>
+      `}
+    </div>`;
+}
+function switchAuth(m) { authMode = m; renderAuthModal(); }
+function pickRole(r) { regRole = r; renderAuthModal(); }
+
+async function doLogin() {
+  const phone = document.getElementById("authPhone").value.trim();
+  const pass = document.getElementById("authPass").value;
+  if (!phone || !pass) { alert("请填写手机号和密码"); return; }
+  await beginEdit();
+  const acc = DATA.accounts.find(a => a.phone === phone);
+  if (!acc) { alert("手机号或密码错误"); return; }
+  const hash = await hashPass(pass);
+  if (acc.password !== hash) { alert("手机号或密码错误"); return; }
+  setSession(acc.id); closeModal(); refreshAll();
+  alert("登录成功！欢迎回来，" + acc.name);
+}
+async function doRegister() {
+  const name = document.getElementById("regName").value.trim();
+  const phone = document.getElementById("regPhone").value.trim();
+  const pass = document.getElementById("regPass").value;
+  const origin = document.getElementById("regOrigin").value.trim();
+  const city = document.getElementById("regCity").value.trim();
+  const industry = document.getElementById("regIndustry")?.value.trim() || (regRole === "village" ? "村委会" : "");
+  const intro = document.getElementById("regIntro")?.value.trim() || "";
+  if (!name || !phone || !pass) { alert("请填写姓名、手机号和密码"); return; }
+  if (!/^1\d{10}$/.test(phone)) { alert("请输入正确的11位手机号"); return; }
+  if (pass.length < 6) { alert("密码至少6位"); return; }
+  await beginEdit();
+  if (DATA.accounts.find(a => a.phone === phone)) { alert("该手机号已注册，请直接登录"); return; }
+  // 村委会必须校验邀请码
+  if (regRole === "village") {
+    const code = document.getElementById("regCode").value.trim();
+    const valid = VILLAGE_CODES;
+    if (!code) { alert("村委会注册需填写邀请码\n\n邀请码由镇政府统一核发，请向所在镇人民政府申请。"); return; }
+    if (!valid.includes(code)) { alert("邀请码无效或已失效\n\n请向镇政府核实邀请码，或改以「乡贤」身份注册。"); return; }
+  }
+  const tags = regRole === "talent" ? [industry, city].filter(Boolean) : ["村委会"];
+  const hash = await hashPass(pass);
+  const acc = { id: uid("a"), role: regRole, name, phone, password: hash, origin: origin || "未填", industry, city: city || "未填", intro: intro || "暂无简介", tags, regDate: today() };
+  try {
+    DATA.accounts.push(acc);
+    await endEdit();
+    setSession(acc.id);
+    closeModal();
+    alert("注册成功，已自动登录！欢迎加入乡贤反哺对接平台，" + name);
+  } catch (e) { alert("注册失败，请重试：" + e.message); }
+}
+function logout() {
+  if (!confirm("确定退出登录？")) return;
+  setSession(null); refreshAll();
+}
+
+/* ===== 项目详情 ===== */
+function openProject(id) {
+  const p = DATA.projects.find(x => x.id === id); if (!p) return;
+  const progress = pct(p);
+  // 认领记录：已确认 / 待确认
+  const confirmed = p.donors.filter(d => d.status !== "pending");
+  const pending = p.donors.filter(d => d.status === "pending");
+  const donorList = confirmed.length
+    ? confirmed.map(d => `<li>${d.anonymous ? "匿名乡贤" : d.name} — ${yuan(d.amount)} <small style="color:#999">（${d.date}${d.method ? " · " + d.method : ""}）</small></li>`).join("")
+    : `<li style="color:#aaa">暂无认领记录</li>`;
+  let pendingBlock = "";
+  if (pending.length) {
+    pendingBlock = `<div style="margin-top:10px;font-size:13px;font-weight:600;color:#b8860b;">⏳ 待确认到账（${pending.length}）</div><ul style="font-size:13px;color:#555;padding-left:20px;line-height:1.9;">`;
+    pending.forEach(d => {
+      pendingBlock += `<li>${d.anonymous ? "匿名乡贤" : d.name} — ${yuan(d.amount)} <small style="color:#999">（${d.date}）</small>`;
+      if (d.voucher) pendingBlock += `<br><img src="${d.voucher}" style="max-width:120px;border-radius:6px;margin:4px 0;" alt="付款凭证">`;
+      if (isVillage()) pendingBlock += `<br><button class="btn" style="width:auto;padding:3px 10px;font-size:11px;display:inline-block;" onclick="confirmDonor('${p.id}','${d.id}')">确认到账</button> <button class="btn outline" style="width:auto;padding:3px 10px;font-size:11px;display:inline-block;" onclick="rejectDonor('${p.id}','${d.id}')">驳回</button>`;
+      pendingBlock += `</li>`;
+    });
+    pendingBlock += `</ul>`;
+    if (!isVillage()) pendingBlock += `<small style="color:#999;">待村委会确认到账后金额才计入</small>`;
+  }
+
+  // 认领区
+  let claimArea;
+  const pay = paymentForProject(p);
+  if (p.status === "done") {
+    claimArea = `<div class="info-box green">✅ 本项目已完工，详见致谢公示墙。</div>`;
+  } else if (isTalent()) {
+    const u = currentUser();
+    const qr = pay.qrcode;
+    claimArea = `
+      <div class="info-box">乡贤可自主认领或联合认领。已为「${u.name}」预填。请用微信扫码向村委会收款码支付认领金额，付款后上传截图，村委会确认到账后计入。</div>
+      <div class="form-group"><label>认领人姓名 / 单位</label><input type="text" id="claimName" value="${u.name}"></div>
+      <div class="form-group"><label>联系方式（选填）</label><input type="text" id="claimContact" placeholder="手机或微信"></div>
+      <div class="form-group"><label>认领金额（元）</label><input type="number" id="claimAmount" placeholder="如：10000" min="1"></div>
+      <div class="form-group"><label>是否匿名</label><select id="claimAnonymous"><option value="false">实名公示</option><option value="true">匿名公示</option></select></div>
+      ${qr ? `<div style="text-align:center;margin:10px 0;"><img src="${qr}" style="max-width:200px;border-radius:8px;border:1px solid #eee;"><div style="font-size:12px;color:#999;margin-top:6px;">微信扫一扫，支付您填写的认领金额</div></div>` : `<div class="info-box red">该村委尚未上传收款码，暂无法认领，请联系村委会上传。</div>`}
+      <div class="form-group"><label>付款截图（凭证）</label><input type="file" id="claimVoucher" accept="image/*"></div>
+      <button class="btn" ${qr ? "" : "disabled"} onclick="submitVoucherClaim('${p.id}')">提交付款凭证</button>`;
+  } else if (isVillage()) {
+    claimArea = `<div class="info-box">村委会账号不能认领捐资，认领需由乡贤账号操作。${!pay.qrcode ? "<br>本账号尚未上传收款码，乡贤暂无法认领，请在「我的」→收款码设置中上传。" : ""}</div>`;
+  } else {
+    claimArea = `<div class="info-box red">请先登录乡贤账号后认领捐资。</div>
+      <button class="btn" onclick="closeModal();openAuth('login')">去登录</button>
+      <div class="lock-note">没有账号？登录弹窗可切换到「注册」</div>`;
+  }
+
+  // 完工区（仅村委会）
+  let completeArea = "";
+  if (isVillage() && p.status !== "done") {
+    completeArea = `
+      <div class="divider"><span>村委会操作</span></div>
+      <button class="btn green" onclick="openCompleteForm('${p.id}')">✅ 标记项目已完工</button>
+      <small class="lock-note" style="color:#999;">资金到位、项目建成后，由村委会确认完工并填写致谢语</small>`;
+  }
+
+  document.getElementById("modalInner").innerHTML = `
+    <button class="close" onclick="closeModal()">×</button>
+    <div class="modal-head">
+      <h3>${p.icon || "📍"} ${p.title}</h3>
+      <div class="meta-row"><span>🏷 ${p.category}</span><span>📍 ${p.village}</span><span>📅 截止 ${p.deadline}</span><span class="status-tag ${statusClass(p.status)}">${statusText(p.status)}</span></div>
+    </div>
+    <div class="modal-body">
+      <p>${p.desc}</p>
+      <div style="font-size:13px;color:#888;margin:8px 0;">发布方：${p.creator} · 发布于 ${p.publishDate}</div>
+      <div style="margin-top:14px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#666;"><span>已筹 ${yuan(p.raised)}</span><span>目标 ${yuan(p.amount)}（${progress}%）</span></div>
+        <div class="progress"><div style="width:${progress}%"></div></div>
+      </div>
+      <div style="margin-top:14px;">
+        <div style="font-size:13px;font-weight:600;color:#6b4423;margin-bottom:6px;">认领记录</div>
+        <ul style="font-size:13px;color:#555;padding-left:20px;line-height:1.9;">${donorList}</ul>
+        ${pendingBlock}
+      </div>
+      ${claimArea}
+      ${completeArea}
+    </div>`;
+  document.getElementById("modal").classList.add("show");
+}
+
+/* 读取认领表单公共字段 */
+function readClaimForm() {
+  const name = document.getElementById("claimName").value.trim();
+  const amount = parseInt(document.getElementById("claimAmount").value, 10);
+  const anonymous = document.getElementById("claimAnonymous").value === "true";
+  return { name, amount, anonymous };
+}
+
+/* ===== 收款码 + 凭证上传 ===== */
+async function submitVoucherClaim(id) {
+  const u = currentUser(); if (!u || u.role !== "talent") { alert("请先登录乡贤账号"); return; }
+  const { name, amount, anonymous } = readClaimForm();
+  if (!name) { alert("请填写认领人姓名"); return; }
+  if (!amount || amount <= 0) { alert("请填写认领金额"); return; }
+  const fileInput = document.getElementById("claimVoucher");
+  if (!fileInput || !fileInput.files || !fileInput.files[0]) { alert("请上传付款截图作为凭证"); return; }
+  let voucher;
+  try { voucher = await compressImage(fileInput.files[0], 800, 0.7); }
+  catch (e) { alert("图片读取失败，请换一张"); return; }
+  try {
+    await beginEdit();
+    const p = DATA.projects.find(x => x.id === id); if (!p) { alert("项目不存在"); return; }
+    p.donors.push({ id: uid("d"), name, amount, anonymous, date: today(), accountId: u.id, method: "微信支付(收款码)", status: "pending", voucher });
+    if (p.status === "need") p.status = "claim";
+    recalcRaised(p);
+    await endEdit();
+    closeModal();
+    alert("📷 凭证已提交！\n\n您的认领 " + yuan(amount) + " 待村委会确认到账后计入项目筹款。\n\n可在「我的」查看认领记录（状态：待确认）。");
+  } catch (e) { alert("提交失败，请重试：" + e.message); }
+}
+
+/* 村委会确认到账 */
+async function confirmDonor(id, donorId) {
+  if (!isVillage()) { alert("仅村委会可确认"); return; }
+  if (!confirm("确认该笔认领已到账？")) return;
+  try {
+    await beginEdit();
+    const p = DATA.projects.find(x => x.id === id); if (!p) { alert("项目不存在"); return; }
+    const d = p.donors.find(x => x.id === donorId);
+    if (!d) { alert("该认领记录已不存在，可能已被处理或驳回。"); openProject(id); return; }
+    d.status = "confirmed"; recalcRaised(p);
+    await endEdit();
+    openProject(id);
+    alert("✅ 已确认到账，" + yuan(d.amount) + " 已计入项目筹款。");
+  } catch (e) { alert("操作失败，请重试：" + e.message); }
+}
+/* 村委会驳回 */
+async function rejectDonor(id, donorId) {
+  if (!isVillage()) { alert("仅村委会可驳回"); return; }
+  if (!confirm("确定驳回该笔认领？\n\n驳回后该认领记录将被删除。")) return;
+  try {
+    await beginEdit();
+    const p = DATA.projects.find(x => x.id === id); if (!p) { alert("项目不存在"); return; }
+    const idx = p.donors.findIndex(x => x.id === donorId);
+    if (idx < 0) { alert("该认领记录已不存在，可能已被处理。"); openProject(id); return; }
+    const d = p.donors[idx];
+    p.donors.splice(idx, 1); recalcRaised(p);
+    await endEdit();
+    openProject(id);
+    alert("已驳回 " + (d.anonymous ? "匿名乡贤" : d.name) + " 的认领。");
+  } catch (e) { alert("操作失败，请重试：" + e.message); }
+}
+
+/* ===== 发布需求 ===== */
+function openPublishModal() {
+  if (!isVillage()) { alert("仅村委会账号可发布需求"); openAuth("login"); return; }
+  document.getElementById("modalInner").innerHTML = `
+    <button class="close" onclick="closeModal()">×</button>
+    <div class="modal-head"><h3>＋ 发布村庄建设需求</h3></div>
+    <div class="modal-body">
+      <div class="info-box">由村委会填写，发布后将进入「需求清单」供乡贤认领。</div>
+      <div class="form-group"><label>项目标题</label><input type="text" id="pubTitle" placeholder="如：村口牌坊修缮"></div>
+      <div class="form-row">
+        <div class="form-group"><label>项目类别</label><select id="pubCategory"><option>基础设施</option><option>古迹保护</option><option>文化教育</option><option>民生公益</option><option>产业发展</option><option>人居环境</option></select></div>
+        <div class="form-group"><label>所属村</label><input type="text" id="pubVillage" placeholder="如：柑榄村 / 石溪自然村"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>所需资金（元）</label><input type="number" id="pubAmount" placeholder="如：50000" min="1"></div>
+        <div class="form-group"><label>截止日期</label><input type="date" id="pubDeadline"></div>
+      </div>
+      <div class="form-group"><label>需求说明</label><textarea id="pubDesc" placeholder="详细描述项目背景、建设内容、预期成效..."></textarea></div>
+      <button class="btn" onclick="submitPublish()">发布需求</button>
+    </div>`;
+  document.getElementById("modal").classList.add("show");
+}
+async function submitPublish() {
+  const u = currentUser(); if (!isVillage()) { alert("仅村委会可发布"); return; }
+  const title = document.getElementById("pubTitle").value.trim();
+  const amount = parseInt(document.getElementById("pubAmount").value, 10);
+  const desc = document.getElementById("pubDesc").value.trim();
+  if (!title) { alert("请填写项目标题"); return; }
+  if (!amount || amount <= 0) { alert("请填写所需资金"); return; }
+  if (!desc) { alert("请填写需求说明"); return; }
+  const icons = { "基础设施":"🌉", "古迹保护":"🏛", "文化教育":"📚", "民生公益":"🍚", "产业发展":"🏭", "人居环境":"🌳" };
+  const cat = document.getElementById("pubCategory").value;
+  const newP = {
+    id: uid("p"), title, category: cat, icon: icons[cat] || "📍",
+    village: document.getElementById("pubVillage").value.trim() || "柑榄村",
+    amount, raised: 0, deadline: document.getElementById("pubDeadline").value || "2026-12-31",
+    desc, status: "need", donors: [], creatorId: u.id, creator: u.name, publishDate: today()
+  };
+  try {
+    await beginEdit();
+    DATA.projects.unshift(newP);
+    await endEdit();
+    closeModal();
+    alert("需求发布成功！已进入需求清单，等待乡贤认领。");
+  } catch (e) { alert("发布失败，请重试：" + e.message); }
+}
+
+/* ===== 完工 ===== */
+function openCompleteForm(id) {
+  const p = DATA.projects.find(x => x.id === id); if (!p) return;
+  if (!isVillage()) { alert("仅村委会可标记完工"); return; }
+  const confirmedDonors = p.donors.filter(d => d.status !== "pending");
+  if (confirmedDonors.length === 0) { alert("该项目尚无已确认到账的认领记录，无法完工公示。\n\n请先确认乡贤认领到账后再标记完工。"); return; }
+  const donorNames = confirmedDonors.map(d => (d.anonymous ? "匿名乡贤" : d.name) + "（" + yuan(d.amount) + "）").join("、");
+  const defaultThanks = `「${p.title}」已圆满完工，${p.village}全体村民谨向 ${donorNames} 致以崇高谢意，乡亲反哺桑梓之情，永铭村史。`;
+  document.getElementById("modalInner").innerHTML = `
+    <button class="close" onclick="closeModal()">×</button>
+    <div class="modal-head"><h3>✅ 确认项目完工 · ${p.title}</h3></div>
+    <div class="modal-body">
+      <div class="info-box green">完工后项目将进入「致谢公示墙」，向捐资乡贤公示致谢，并可在村内立碑永志。</div>
+      <div style="font-size:13px;color:#555;margin-bottom:14px;"><b>捐资记录：</b>${donorNames}<br><b>合计：</b>${yuan(p.raised)} / 目标 ${yuan(p.amount)}</div>
+      <div class="form-group"><label>致谢语（将公示在致谢墙）</label><textarea id="cmpThanks" style="min-height:90px;">${defaultThanks}</textarea></div>
+      <div class="form-group"><label>完工日期</label><input type="date" id="cmpDate" value="${today()}"></div>
+      <div class="form-group"><label class="inline"><input type="checkbox" id="cmpMonument" checked style="width:auto;"><span>🏛 在项目所在地立碑永志</span></label></div>
+      <div class="btn-row"><button class="btn outline" onclick="openProject('${p.id}')">返回</button><button class="btn green" onclick="submitComplete('${p.id}')">确认完工公示</button></div>
+    </div>`;
+}
+async function submitComplete(id) {
+  if (!isVillage()) { alert("仅村委会可标记完工"); return; }
+  const thanks = document.getElementById("cmpThanks").value.trim();
+  if (!thanks) { alert("请填写致谢语"); return; }
+  const monument = document.getElementById("cmpMonument").checked;
+  const completeDate = document.getElementById("cmpDate").value || today();
+  try {
+    await beginEdit();
+    const p = DATA.projects.find(x => x.id === id); if (!p) { alert("项目不存在"); return; }
+    if (p.donors.filter(d => d.status !== "pending").length === 0) { alert("该项目尚无已确认到账的认领，无法完工。"); return; }
+    p.status = "done"; p.thanks = thanks; p.monument = monument; p.completeDate = completeDate;
+    await endEdit();
+    closeModal();
+    alert("🎉 项目已完工！\n\n致谢公示已发布" + (monument ? "，并已记录立碑信息" : "") + "。\n\n乡情联结，反哺桑梓，乡贤评选将同步纳入。");
+  } catch (e) { alert("操作失败，请重试：" + e.message); }
+}
+
+/* ===== 个人中心 ===== */
+function renderMine() {
+  const box = document.getElementById("mineContent");
+  const u = currentUser();
+  if (!u) { box.innerHTML = `<div class="empty"><div class="ico">👤</div>请先登录<button class="btn" style="max-width:200px;margin:16px auto 0;" onclick="openAuth('login')">登录 / 注册</button></div>`; return; }
+  // 我的认领（乡贤） / 我发布的项目（村委会）
+  let records = [], recordsTitle = "";
+  if (u.role === "talent") {
+    recordsTitle = "我的认领记录";
+    DATA.projects.forEach(p => p.donors.forEach(d => { if (d.accountId === u.id) records.push({ proj: p, donor: d }); }));
+  } else {
+    recordsTitle = "我发布的需求";
+    DATA.projects.forEach(p => { if (p.creatorId === u.id) records.push({ proj: p, donor: null }); });
+  }
+  const totalDonated = u.role === "talent" ? records.filter(r => r.donor.status !== "pending").reduce((s, r) => s + r.donor.amount, 0) : 0;
+  const pendingCnt = u.role === "talent" ? records.filter(r => r.donor.status === "pending").length : 0;
+  const doneCnt = u.role === "village" ? records.filter(r => r.proj.status === "done").length : 0;
+
+  const recordsHtml = records.length === 0
+    ? `<div class="empty" style="padding:30px;"><div class="ico">📋</div>${u.role === "talent" ? "暂无认领记录" : "暂未发布需求"}</div>`
+    : records.map(r => `
+      <div class="record-item">
+        <div class="l"><div class="t">${r.proj.icon || "📍"} ${r.proj.title}</div>
+        <div class="s">${r.proj.village} · <span class="status-tag ${statusClass(r.proj.status)}">${statusText(r.proj.status)}</span> · 截止 ${r.proj.deadline}</div></div>
+        <div class="r">${u.role === "talent" ? `<div class="a">${yuan(r.donor.amount)}</div><div class="d">${r.donor.date}${r.donor.anonymous?" · 匿名":""}</div><div class="d"><span class="status-tag ${r.donor.status==='pending'?'status-need':'status-done'}">${r.donor.status==='pending'?'⏳待确认':'✅已到账'}</span></div>` : `<div class="d">发布 ${r.proj.publishDate}</div><div class="a" style="color:#8b5a2b;font-size:13px;">${yuan(r.proj.raised)}/${yuan(r.proj.amount)}</div>`}</div>
+      </div>`).join("");
+
+  const tagsHtml = (u.tags || []).map(t => `<span class="tag">${t}</span>`).join("");
+  const miniStat = u.role === "talent"
+    ? `<div class="mini-stat"><div class="ms"><div class="n">${records.length}</div><div class="l">认领项目</div></div><div class="ms"><div class="n">${yuan(totalDonated)}</div><div class="l">已到账捐资</div></div><div class="ms"><div class="n">${pendingCnt}</div><div class="l">待确认</div></div></div>`
+    : `<div class="mini-stat"><div class="ms"><div class="n">${records.length}</div><div class="l">发布需求</div></div><div class="ms"><div class="n">${doneCnt}</div><div class="l">已完工</div></div></div>`;
+
+  // 村委会收款码设置卡（只管自己账号的收款码）
+  const myPay = u.role === "village" ? (u.payment || { qrcode: "" }) : null;
+  const payCard = u.role === "village" ? `
+    <div class="profile-card">
+      <div class="section-title" style="margin-top:0;">💳 我的收款码设置<span class="more">本账号发布的需求将使用此收款码</span></div>
+      <div class="info-box">乡贤认领本账号发布的需求时，会显示此收款码；付款后上传截图，由您确认到账才计入。<br>各村委账号独立管理自己的收款码，互不影响。</div>
+      <div class="form-group"><label>我的微信收款码</label>
+        <input type="file" id="payQrcode" accept="image/*">
+        ${myPay.qrcode ? `<div style="margin-top:8px;text-align:center;"><img src="${myPay.qrcode}" style="max-width:160px;border-radius:8px;border:1px solid #eee;"><div style="font-size:11px;color:#999;margin-top:4px;">当前收款码（不重新上传则保持不变）</div></div>` : `<div style="font-size:12px;color:#999;margin-top:4px;">尚未上传收款码（未上传则乡贤暂无法认领）</div>`}
+      </div>
+      <button class="btn" onclick="savePayment()">保存收款码</button>
+    </div>` : "";
+
+  box.innerHTML = `
+    ${payCard}
+    <div class="profile-card">
+      <div class="profile-top">
+        <div class="avatar">${u.name.charAt(0)}</div>
+        <div><div class="pname">${u.name}</div><div class="prole">${u.role === "village" ? "🏛 村委会账号" : "🤝 乡贤账号"} · 注册于 ${u.regDate}</div></div>
+      </div>
+      <div class="profile-detail">
+        <div class="item"><div class="k">手机号</div><div class="v">${u.phone}</div></div>
+        <div class="item"><div class="k">籍贯/所在村</div><div class="v">${u.origin}</div></div>
+        <div class="item"><div class="k">${u.role === "talent" ? "从事行业" : "所在城市"}</div><div class="v">${u.role === "talent" ? u.industry : u.city}</div></div>
+        <div class="item"><div class="k">${u.role === "talent" ? "所在城市" : "角色"}</div><div class="v">${u.role === "talent" ? u.city : "村委会"}</div></div>
+        <div class="item" style="grid-column:1/3;"><div class="k">简介</div><div class="v">${u.intro}</div></div>
+        <div class="item" style="grid-column:1/3;"><div class="k">标签</div><div class="v">${tagsHtml || "无"}</div></div>
+      </div>
+      ${miniStat}
+      <div class="btn-row" style="margin-top:16px;"><button class="btn outline" onclick="openEditProfile()">编辑资料</button></div>
+    </div>
+    <div class="section-title">${recordsTitle}<span class="more">${u.role === "talent" ? "我的捐资" : "我发布的项目"}</span></div>
+    ${recordsHtml}`;
+}
+
+/* 保存收款码（写入当前村委会账号） */
+async function savePayment() {
+  const u = currentUser();
+  if (!u || u.role !== "village") { alert("仅村委会账号可设置收款码"); return; }
+  const fileInput = document.getElementById("payQrcode");
+  let newQrcode = null;
+  if (fileInput && fileInput.files && fileInput.files[0]) {
+    try { newQrcode = await compressImage(fileInput.files[0], 600, 0.8); }
+    catch (e) { alert("收款码图片读取失败"); return; }
+  }
+  try {
+    await beginEdit();
+    const acc = DATA.accounts.find(a => a.id === u.id); if (!acc) { alert("账号不存在"); return; }
+    if (!acc.payment) acc.payment = { qrcode: "" };
+    if (newQrcode) acc.payment.qrcode = newQrcode;
+    if (!acc.payment.qrcode) { alert("请上传微信收款码图片"); return; }
+    await endEdit();
+    alert("✅ 收款码已保存（仅对本账号发布的需求生效）\n\n乡贤认领时将显示此收款码。");
+  } catch (e) { alert("保存失败，请重试：" + e.message); }
+}
+
+function openEditProfile() {
+  const u = currentUser(); if (!u) return;
+  document.getElementById("modalInner").innerHTML = `
+    <button class="close" onclick="closeModal()">×</button>
+    <div class="modal-head"><h3>编辑个人资料</h3></div>
+    <div class="modal-body">
+      <div class="form-group"><label>姓名/单位</label><input type="text" id="edName" value="${u.name}"></div>
+      <div class="form-row">
+        <div class="form-group"><label>籍贯/所在村</label><input type="text" id="edOrigin" value="${u.origin}"></div>
+        <div class="form-group"><label>所在城市</label><input type="text" id="edCity" value="${u.city}"></div>
+      </div>
+      ${u.role === "talent" ? `<div class="form-group"><label>从事行业</label><input type="text" id="edIndustry" value="${u.industry}"></div>` : ""}
+      <div class="form-group"><label>个人简介</label><textarea id="edIntro">${u.intro}</textarea></div>
+      <div class="form-group"><label>标签（逗号分隔）</label><input type="text" id="edTags" value="${(u.tags||[]).join(", ")}"></div>
+      <button class="btn" onclick="saveProfile()">保存</button>
+    </div>`;
+  document.getElementById("modal").classList.add("show");
+}
+async function saveProfile() {
+  const u = currentUser(); if (!u) return;
+  const name = document.getElementById("edName").value.trim() || u.name;
+  const origin = document.getElementById("edOrigin").value.trim() || u.origin;
+  const city = document.getElementById("edCity").value.trim() || u.city;
+  const industry = u.role === "talent" ? (document.getElementById("edIndustry").value.trim() || u.industry) : u.industry;
+  const intro = document.getElementById("edIntro").value.trim() || u.intro;
+  const tags = document.getElementById("edTags").value.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+  try {
+    await beginEdit();
+    const acc = DATA.accounts.find(a => a.id === u.id); if (!acc) { alert("账号不存在"); return; }
+    acc.name = name; acc.origin = origin; acc.city = city; acc.industry = industry; acc.intro = intro; acc.tags = tags;
+    await endEdit();
+    closeModal();
+    alert("资料已更新");
+  } catch (e) { alert("保存失败，请重试：" + e.message); }
+}
+
+/* ===== 弹窗 ===== */
+function closeModal() { document.getElementById("modal").classList.remove("show"); }
+document.getElementById("modal").addEventListener("click", e => { if (e.target.id === "modal") closeModal(); });
+
+/* ===== 统一刷新 ===== */
+function refreshAll() { renderHeader(); renderStats(); renderProjects(); renderTalents(); renderThanks(); renderMine(); }
+
+/* ===== 启动：异步加载数据后渲染；后端模式下定时拉取他人更新 ===== */
+(async () => {
+  try { DATA = await loadData(); } catch (e) { console.error("启动加载失败", e); }
+  refreshAll();
+  if (USE_GITHUB || USE_BACKEND || USE_SERVER) {
+    // 每 15 秒拉取一次，让需求清单/认领状态近实时同步
+    setInterval(async () => {
+      try { const fresh = await loadData(); DATA = fresh; refreshAll(); } catch (e) {}
+    }, 15000);
+    // 页面重新可见时立即拉取
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) { (async () => { try { DATA = await loadData(); refreshAll(); } catch(e){} })(); }
+    });
+  }
+})();
+</script>
+</body>
+</html>
